@@ -56,15 +56,20 @@ void Application::initializeVulkanResources()
         check(vkCreateFence(ctx_.device(), &fenceCreateInfo, nullptr, &fence));
     }
 
-    // Initialize semaphores
-    presentCompleteSemaphores_.resize(swapchain_.images().size());
-    renderCompleteSemaphores_.resize(swapchain_.images().size());
+    // Acquire semaphores: per frame-in-flight (fence guards reuse)
+    imageAcquiredSemaphores_.resize(kMaxFramesInFlight);
+    for (size_t i = 0; i < kMaxFramesInFlight; i++) {
+        VkSemaphoreCreateInfo semaphoreCI{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+        check(vkCreateSemaphore(ctx_.device(), &semaphoreCI, nullptr,
+                                &imageAcquiredSemaphores_[i]));
+    }
+
+    // Render-done semaphores: per swapchain image (vkAcquireNextImageKHR guards reuse)
+    renderDoneSemaphores_.resize(swapchain_.images().size());
     for (size_t i = 0; i < swapchain_.images().size(); i++) {
         VkSemaphoreCreateInfo semaphoreCI{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
         check(vkCreateSemaphore(ctx_.device(), &semaphoreCI, nullptr,
-                                &presentCompleteSemaphores_[i]));
-        check(
-            vkCreateSemaphore(ctx_.device(), &semaphoreCI, nullptr, &renderCompleteSemaphores_[i]));
+                                &renderDoneSemaphores_[i]));
     }
 }
 
@@ -314,9 +319,11 @@ Application::~Application()
         cmd.cleanup();
     }
 
-    for (size_t i = 0; i < swapchain_.images().size(); i++) {
-        vkDestroySemaphore(ctx_.device(), presentCompleteSemaphores_[i], nullptr);
-        vkDestroySemaphore(ctx_.device(), renderCompleteSemaphores_[i], nullptr);
+    for (auto& sem : imageAcquiredSemaphores_) {
+        vkDestroySemaphore(ctx_.device(), sem, nullptr);
+    }
+    for (auto& sem : renderDoneSemaphores_) {
+        vkDestroySemaphore(ctx_.device(), sem, nullptr);
     }
 
     for (auto& fence : waitFences_) {
@@ -333,8 +340,7 @@ void Application::run()
     // 렌더러가 파이프라인을 사용할 때 어떤 리소스를 넣을지 결정한다.
 
     uint32_t frameCounter = 0;
-    uint32_t currentFrame = 0;     // For CPU resources (command buffers, fences)
-    uint32_t currentSemaphore = 0; // For GPU semaphores (swapchain sync)
+    uint32_t currentFrame = 0; // For CPU resources (command buffers, fences, acquire semaphores)
 
     // NEW: Animation timing variables
     auto lastTime = std::chrono::high_resolution_clock::now();
@@ -447,10 +453,10 @@ void Application::run()
         
         guiRenderer_.update();
 
-        // Acquire using currentSemaphore index (GPU-side semaphore)
+        // Acquire using currentFrame index (fence guards semaphore reuse)
         uint32_t imageIndex{0};
         VkResult result = vkAcquireNextImageKHR(ctx_.device(), swapchain_.handle(), UINT64_MAX,
-                                                presentCompleteSemaphores_[currentSemaphore],
+                                                imageAcquiredSemaphores_[currentFrame],
                                                 VK_NULL_HANDLE, &imageIndex);
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             continue; // Ignore resize in this example
@@ -502,22 +508,21 @@ void Application::run()
         submitInfo.pCommandBuffers = &cmd.handle();
         submitInfo.commandBufferCount = 1;
         submitInfo.pWaitDstStageMask = &waitStageMask;
-        submitInfo.pWaitSemaphores = &presentCompleteSemaphores_[currentSemaphore];
+        submitInfo.pWaitSemaphores = &imageAcquiredSemaphores_[currentFrame];
         submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = &renderCompleteSemaphores_[currentSemaphore];
+        submitInfo.pSignalSemaphores = &renderDoneSemaphores_[imageIndex];
         submitInfo.signalSemaphoreCount = 1;
         check(vkQueueSubmit(cmd.queue(), 1, &submitInfo, waitFences_[currentFrame]));
 
         VkPresentInfoKHR presentInfo{VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = &renderCompleteSemaphores_[currentSemaphore];
+        presentInfo.pWaitSemaphores = &renderDoneSemaphores_[imageIndex];
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = &swapchain_.handle();
         presentInfo.pImageIndices = &imageIndex;
         check(vkQueuePresentKHR(ctx_.graphicsQueue(), &presentInfo));
 
         currentFrame = (currentFrame + 1) % kMaxFramesInFlight;
-        currentSemaphore = (currentSemaphore + 1) % swapchain_.imageCount();
 
         frameCounter++;
     }

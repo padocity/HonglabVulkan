@@ -85,16 +85,19 @@ add_library(Engine STATIC
 target_include_directories(Engine PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}
-    ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/include
 )
 
-# Add compiler definitions to fix C++20 compatibility issues
+# Compiler definitions
 target_compile_definitions(Engine PUBLIC
     GLM_ENABLE_EXPERIMENTAL
     GLM_FORCE_RADIANS
     GLM_FORCE_DEPTH_ZERO_TO_ONE
     GLFW_INCLUDE_VULKAN
 )
+
+if(MSVC)
+    target_compile_definitions(Engine PUBLIC NOMINMAX _CRT_SECURE_NO_WARNINGS)
+endif()
 
 # Link required dependencies
 target_link_libraries(Engine PUBLIC Vulkan::Vulkan)
@@ -130,23 +133,26 @@ elseif(TARGET spirv-reflect::spirv-reflect)
     target_compile_definitions(Engine PUBLIC HAS_SPIRV_REFLECT)
 endif()
 
-# Handle KTX - prioritize manually built KTX over vcpkg
+# Handle KTX
 if(TARGET ktx::ktx)
-    # Use manually built KTX from /mnt/d/UbuntuTestFolder/KTX-Software
     target_link_libraries(Engine PUBLIC ktx::ktx)
     target_compile_definitions(Engine PUBLIC HAS_KTX)
-    message(STATUS "Engine: Using manually built KTX library from /mnt/d/UbuntuTestFolder/KTX-Software")
-elseif(TARGET unofficial::ktx::ktx)
-    # Fallback to vcpkg KTX if available
-    target_link_libraries(Engine PUBLIC unofficial::ktx::ktx)
+    message(STATUS "Engine: Using KTX library (manual build)")
+elseif(TARGET KTX::ktx)
+    target_link_libraries(Engine PUBLIC KTX::ktx)
     target_compile_definitions(Engine PUBLIC HAS_KTX)
-    message(STATUS "Engine: Using vcpkg KTX library")
+    message(STATUS "Engine: Using KTX library (vcpkg)")
 else()
     message(STATUS "Engine: KTX library not found")
 endif()
 
-# Compiler-specific options (changed to C++20 to match main CMakeLists.txt)
+# C++ standard
 target_compile_features(Engine PUBLIC cxx_std_20)
+
+# MSVC options
+if(MSVC)
+    target_compile_options(Engine PUBLIC /MP)
+endif()
 
 # Platform-specific settings
 if(UNIX AND NOT APPLE)
