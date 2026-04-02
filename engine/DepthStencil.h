@@ -69,6 +69,8 @@ class DepthStencil // TODO: hlab::Image or texture
         depthOnlyViewCI.subresourceRange.layerCount = 1;
         depthOnlyViewCI.image = image;
         check(vkCreateImageView(ctx_.device(), &depthOnlyViewCI, nullptr, &samplerView));
+
+        barrierHelper_.update(image, ctx_.depthFormat(), 1, 1);
     }
 
     void cleanup()
