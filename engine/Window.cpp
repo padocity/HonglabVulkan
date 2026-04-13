@@ -1,4 +1,4 @@
-#include "Window.h"
+﻿#include "Window.h"
 #include "VulkanTools.h"
 
 #include <algorithm>

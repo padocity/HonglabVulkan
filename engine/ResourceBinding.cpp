@@ -1,4 +1,4 @@
-#include "ResourceBinding.h"
+﻿#include "ResourceBinding.h"
 
 namespace hlab {
 

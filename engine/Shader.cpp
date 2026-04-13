@@ -1,4 +1,4 @@
-#include "Shader.h"
+﻿#include "Shader.h"
 #include "VulkanTools.h"
 #include "Logger.h"
 #include <algorithm>

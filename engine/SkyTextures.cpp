@@ -1,4 +1,4 @@
-#include "SkyTextures.h"
+﻿#include "SkyTextures.h"
 #include "Context.h"
 #include "VulkanTools.h"
 #include "Logger.h"

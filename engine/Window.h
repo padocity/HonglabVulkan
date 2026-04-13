@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 // 주의: 윈도우즈 운영체제에서 제공하는 "Windows.h"와 다릅니다.
 

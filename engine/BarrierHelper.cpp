@@ -1,4 +1,4 @@
-#include "BarrierHelper.h"
+﻿#include "BarrierHelper.h"
 
 namespace hlab {
 

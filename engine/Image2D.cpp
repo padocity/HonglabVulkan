@@ -1,4 +1,4 @@
-#include "Image2D.h"
+﻿#include "Image2D.h"
 #include "Context.h"
 #include "Logger.h"
 #include "MappedBuffer.h"

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <cstring>
 #include <vulkan/vulkan.h>

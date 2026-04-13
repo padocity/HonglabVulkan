@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Context.h"
 #include "Logger.h"

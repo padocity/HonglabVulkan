@@ -1,4 +1,4 @@
-#include "MappedBuffer.h"
+﻿#include "MappedBuffer.h"
 #include "VulkanTools.h"
 
 namespace hlab {

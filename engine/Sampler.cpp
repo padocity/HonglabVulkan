@@ -1,4 +1,4 @@
-#include "Sampler.h"
+﻿#include "Sampler.h"
 #include "Context.h"
 #include "VulkanTools.h"
 #include "Logger.h"
