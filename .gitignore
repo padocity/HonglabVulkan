@@ -14,9 +14,6 @@ assets/Noto_Sans_KR
 assets/textures
 **/imgui.ini
 
-# Due to builtin-baseline
-vcpkg.json
-
 # User-specific files
 *.rsuser
 *.suo

@@ -1,0 +1,18 @@
+{
+  "dependencies": [
+    "glfw3",
+    "assimp",
+    "glm",
+    "spirv-reflect",
+    "stb",
+    {
+      "name": "imgui",
+      "features": [ "wchar32" ]
+    },
+    {
+      "name": "ktx",
+      "features": [ "tools", "vulkan" ]
+    }
+  ],
+  "builtin-baseline": "dddca6fa87f177e0678e2545c4b4636a44aa05bd"
+}
