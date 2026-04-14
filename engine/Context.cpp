@@ -326,7 +326,7 @@ void Context::createInstance(vector<const char*> requiredInstanceExtensions)
     instanceCreateInfo.pApplicationInfo = &appInfo;
 
     if (portabilityAlreadyAdded) {
-        instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+        instanceCreateInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR; // for MacOS
         // Also need to enable the extension in ppEnabledExtensionNames
     }
 
