@@ -78,7 +78,7 @@ int main()
     // File paths for our compute shader example
     string assetsPath = "../../assets/";
     string inputImageFilename = assetsPath + "image.jpg";
-    string computeShaderFilename = assetsPath + "shaders/test.comp.spv";
+    string computeShaderFilename = assetsPath + "shaders/test.comp.spv"; // spir-v: binary format of shader (문법 중립적)
     string outputImageFilename = "output.jpg";
 
     // ========================================================================
