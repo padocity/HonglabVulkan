@@ -72,9 +72,9 @@ void Image2D::createFromPixelData(unsigned char* pixelData, int width, int heigh
     }
 
     // Determine format based on sRGB flag
-    VkFormat format = sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+    VkFormat format = sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM; // SRGB: Non-linear, UNORM: Linear(0.0~1.0)
 
-    // Create Vulkan image
+    // Create Vulkan image (VkImage)
     createImage(format, static_cast<uint32_t>(width), static_cast<uint32_t>(height),
                 VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
                 VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, 0, VK_IMAGE_VIEW_TYPE_2D);
@@ -110,7 +110,8 @@ void Image2D::createFromPixelData(unsigned char* pixelData, int width, int heigh
     copyCmd.submitAndWait();
 }
 
-std::string fixPath(const std::string& path) // for linux path
+// for linux path
+std::string fixPath(const std::string& path) 
 {
     std::string fixed = path;
     std::replace(fixed.begin(), fixed.end(), '\\', '/');
@@ -266,7 +267,9 @@ void Image2D::createTextureFromImage(string filename, bool isCubemap, bool sRGB)
                         string(stbi_failure_reason()));
     }
 
+    // Create Image2D
     createFromPixelData(pixelData, width, height, 4, sRGB);
+
     stbi_image_free(pixelData);
 }
 
@@ -314,15 +317,15 @@ void Image2D::createImage(VkFormat format, uint32_t width, uint32_t height,
         exitWithMessage("Image dimensions must be greater than zero");
     }
 
-    cleanup();
+    cleanup(); // Protect memory-leak
 
     format_ = format;
     width_ = width;
     height_ = height;
     usageFlags_ |= usage;
 
-    // Create image
-    VkImageCreateInfo imageInfo{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+    // Create image 
+    VkImageCreateInfo imageInfo{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO}; // Info: default settings not exist.
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.format = format_;
     imageInfo.extent.width = width_;

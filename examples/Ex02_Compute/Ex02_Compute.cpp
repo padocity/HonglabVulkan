@@ -89,7 +89,7 @@ int main()
     // The image will be used as readonly storage in our compute shader
     Image2D inputImage(ctx);
     inputImage.updateUsageFlags(VK_IMAGE_USAGE_STORAGE_BIT); // Enable storage image access
-    inputImage.createTextureFromImage(inputImageFilename, false, false);
+    inputImage.createTextureFromImage(inputImageFilename, false, false); // sRGB -> linear conversion is only supported in the Texture unit, not in the Compute unit
 
     uint32_t width = inputImage.width();
     uint32_t height = inputImage.height();

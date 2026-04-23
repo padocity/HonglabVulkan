@@ -73,4 +73,3 @@ Queue Family Properties: 6
   Queue Family 4: 1 queues, flags: TRANSFER SPARSE_BINDING VIDEO_ENCODE 
   Queue Family 5: 1 queues, flags: TRANSFER SPARSE_BINDING OPTICAL_FLOW 
 DescriptorPoolSize.txt not found, will create pools on-demand
-Successfully saved processed image to: output.jpg
