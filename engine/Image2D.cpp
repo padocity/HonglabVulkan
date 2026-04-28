@@ -325,7 +325,7 @@ void Image2D::createImage(VkFormat format, uint32_t width, uint32_t height,
     usageFlags_ |= usage;
 
     // Create image 
-    VkImageCreateInfo imageInfo{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO}; // Info: default settings not exist.
+    VkImageCreateInfo imageInfo{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO}; // Empty! - Default settings not exist.
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.format = format_;
     imageInfo.extent.width = width_;
@@ -334,22 +334,25 @@ void Image2D::createImage(VkFormat format, uint32_t width, uint32_t height,
     imageInfo.mipLevels = mipLevels;
     imageInfo.arrayLayers = arrayLayers;
     imageInfo.samples = sampleCount;
-    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL; // https://en.wikipedia.org/wiki/Z-order_curve
     imageInfo.usage = usageFlags_;
-    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE; // Exclusive is basic mode for parellel computing
+    imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // 'Initial layout' could be undefined / General: Compute shader (but not optimal)
     imageInfo.flags = flags;
 
-    check(vkCreateImage(ctx_.device(), &imageInfo, nullptr, &image_));
+    check(vkCreateImage(ctx_.device(), &imageInfo, nullptr, &image_)); // nullptr: VMA
 
-    // Allocate memory
+    // Allocate & bind memory
     VkMemoryRequirements memReqs;
     vkGetImageMemoryRequirements(ctx_.device(), image_, &memReqs);
 
     VkMemoryAllocateInfo memAllocInfo{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
-    memAllocInfo.allocationSize = memReqs.size;
+    memAllocInfo.allocationSize = memReqs.size; // bytes
     memAllocInfo.memoryTypeIndex =
-        ctx_.getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        ctx_.getMemoryTypeIndex(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT); 
+    // @param typeBits: Bitfield of compatible memory types for the image/buffer.
+    // @param properties: Required memory property flags (e.g., DEVICE_LOCAL).
+   
     check(vkAllocateMemory(ctx_.device(), &memAllocInfo, nullptr, &memory_));
     check(vkBindImageMemory(ctx_.device(), image_, memory_, 0));
 
